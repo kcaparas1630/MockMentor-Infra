@@ -1,0 +1,17 @@
+# Terragrunt and Terraform files
+.terragrunt-cache/
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfstate.lock.info
+*.tfplan
+.terraform.lock.hcl
+terraform.tfvars
+terragrunt.hcl.rendered
+.terragrunt-module-manifest
+
+# Local .terraform directories
+**/.terraform/*
+
+# Generated backend files
+**/backend.tf
