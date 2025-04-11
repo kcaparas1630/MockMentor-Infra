@@ -8,7 +8,7 @@ include "envcommon" {
 }
 
 terraform {
-    source = "${include.envcommon.locals.base_source_url}/artifact-registry"
+    source = "${include.envcommon.locals.base_source_url}?ref=${include.envcommon.locals.base_source_version}"
 }
 
 inputs = {
