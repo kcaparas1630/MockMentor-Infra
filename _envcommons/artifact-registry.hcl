@@ -9,14 +9,18 @@ locals {
   # Automatically load environment-level variables
   region_vars = read_terragrunt_config(find_in_parent_folders("region.hcl"))
   account_vars = read_terragrunt_config(find_in_parent_folders("project.hcl"))
-
+  modules_vars = read_terragrunt_config(find_in_parent_folders("modules.hcl"))
 
   # Extract out common variables for reuse
   gcp_region = local.region_vars.locals.gcp_region
   gcp_project_id = local.account_vars.locals.gcp_project_id
 
-  repo_root = get_repo_root()
-  base_source_url = "${local.repo_root}/_modules"
+  modules_map = {
+    for name, modules in local.modules_vars.locals.modules : name => modules
+  }
+  base_source_url     = "${local.modules_map["artifact-registry"].source_url}"
+  base_source_version = "${local.modules_map["artifact-registry"].version}"
+
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
