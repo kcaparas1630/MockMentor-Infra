@@ -3,14 +3,14 @@
 include "root" {
     path = find_in_parent_folders()
 }
-include "envcommon" {
-    path = "${dirname(find_in_parent_folders())}/_envcommons/enabled_api.hcl"
+include "modules" {
+    path = "${dirname(find_in_parent_folders("modules.hcl"))}"
     expose = true
 }
 
 # Configure the version of the module to use in this environment
 terraform {
-    source = "${include.envcommon.locals.base_source_url}?ref=v1.0.0"
+    source = "${include.modules.locals.base_source_url}?ref=${include.modules.locals.base_source_version}"
 }
 inputs = {
   gcp_api_url = "artifactregistry.googleapis.com"
