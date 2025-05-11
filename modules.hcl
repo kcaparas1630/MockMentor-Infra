@@ -6,7 +6,7 @@ locals {
         }
         cloud-run = {
             source_url = "git::https://github.com/kcaparas1630/AI-Interview-Cloudrun-Module.git//_module"
-            version = "v1.0.0"
+            version = "v1.0.1"
         }
     }
 }
