@@ -16,6 +16,10 @@ dependency "artifact_registry_repository" {
   config_path = "../artifact-repo"
 }
 
+dependency "service_accounts" {
+  config_path = "../service-accounts"
+}
+
 locals {
   # Read project ID from parent configuration
   project_vars = read_terragrunt_config(find_in_parent_folders("project.hcl"))
@@ -31,7 +35,7 @@ locals {
   secrets_dir = "${get_terragrunt_dir()}/secrets"
   frontend_secrets = fileexists("${local.secrets_dir}/frontend.enc.yaml") ? yamldecode(sops_decrypt_file("${local.secrets_dir}/frontend.enc.yaml")) : {}
   typescript_secrets = fileexists("${local.secrets_dir}/typescript.enc.yaml") ? yamldecode(sops_decrypt_file("${local.secrets_dir}/typescript.enc.yaml")) : {}
-  python_secrets = fileexists("${local.secrets_dir}/python.enc.yaml") ? yamldecode(sops_decrypt_file("${local.secrets_dir}/python.enc.yaml")) : {}
+  # python_secrets = fileexists("${local.secrets_dir}/python.enc.yaml") ? yamldecode(sops_decrypt_file("${local.secrets_dir}/python.enc.yaml")) : {}
   
   # Get the image tag from an environment variable, defaulting to "latest"
   image_tag = get_env("DEPLOY_IMAGE_TAG", "latest")
@@ -65,24 +69,17 @@ inputs = {
           name  = "frontend-container"
           image = "${dependency.artifact_registry_repository.outputs.repository_urls.frontend}/ai-interview-frontend"
           tag   = local.image_tag
-          env_vars = [
-            {
-              name  = "GOOGLE_CLOUD_PROJECT"
-              value = local.gcp_project_id
-            },
-            {
-              name  = "NODE_ENV"
-              value = "production"
-            },
-            {
-              name  = "API_URL"
-              value = "https://ai-interview-typescript-server-xxxxx-uc.a.run.app"
-            }
-          ]
+          env_vars = concat(
+            [
+              { name = "GOOGLE_CLOUD_PROJECT", value = local.gcp_project_id },
+              { name = "NODE_ENV", value= "production },
+            ],
+            [for kv in local.frontend_secrets.env_vars : { name = kv.key, value = kv.value }]
+          )
           resources = {
             limits = {
-              memory = "128Mi"
-              cpu    = "0.3"
+              memory = "512Mi"
+              cpu    = "1"
             }
           }
         }
@@ -104,12 +101,15 @@ inputs = {
       ]
       # Force HTTPS for security
       https_only = true
+
+      # allow unauthenticated users to access the service
+      allow_unauthenticated = true
     },
     
     # TypeScript Backend Service
     {
       service_name       = "ai-interview-typescript-server"
-      container_port     = 8080
+      container_port     = 3000
       service_account    = local.platform_service_account_email
       
       containers = [
@@ -117,55 +117,18 @@ inputs = {
           name  = "typescript-container"
           image = "${dependency.artifact_registry_repository.outputs.repository_urls.typescript_server}/ai-interview-typescript-server"
           tag   = local.image_tag
-          env_vars = [
-            {
-              name  = "GOOGLE_CLOUD_PROJECT"
-              value = local.gcp_project_id
-            },
-            {
-              name  = "NODE_ENV"
-              value = "production"
-            },
-            {
-              name  = "SERVICE_NAME"
-              value = "typescript-backend"
-            },
-            {
-              name  = "AI_SERVICE_URL"
-              value = "https://ai-interview-python-server-xxxxx-uc.a.run.app"
-            },
-            # Add database credentials from secrets
-            {
-              name  = "DATABASE_URL"
-              value = try(local.typescript_secrets.env_vars.DATABASE_URL, "")
-            }
-          ]
+          env_vars = concat(
+            [
+              { name = "GOOGLE_CLOUD_PROJECT", value = local.gcp_project_id },
+              { name = "NODE_ENV",          value = "production" },
+            ],
+            [for kv in local.typescript_secrets.env_vars : { name = kv.key, value = kv.value }]
+          )
           resources = {
             limits = {
-              memory = "192Mi"
-              cpu    = "0.4"
+              memory = "512Mi"
+              cpu    = "1"
             }
-          }
-          volume_mounts = [
-            {
-              name       = "api-creds"
-              mount_path = "/secrets/api"
-            }
-          ]
-        }
-      ]
-      
-      volumes = [
-        {
-          name = "api-creds"
-          secret = {
-            secret_name = "typescript-api-credentials"
-            items = [
-              {
-                path    = "credentials.json"
-                version = "latest"
-              }
-            ]
           }
         }
       ]
@@ -192,87 +155,87 @@ inputs = {
     },
     
     # Python AI Service
-    {
-      service_name       = "ai-interview-python-server"
-      container_port     = 8000
-      service_account    = local.platform_service_account_email
+    # {
+    #   service_name       = "ai-interview-python-server"
+    #   container_port     = 8000
+    #   service_account    = local.platform_service_account_email
+       
+    #   containers = [
+    #     {
+    #       name  = "python-container"
+    #       image = "${dependency.artifact_registry_repository.outputs.repository_urls.python_server}/ai-interview-python-server"
+    #       tag   = local.image_tag
+    #       env_vars = [
+    #         {
+    #           name  = "GOOGLE_CLOUD_PROJECT"
+    #           value = local.gcp_project_id
+    #         },
+    #         {
+    #           name  = "ENVIRONMENT"
+    #           value = "production"
+    #         },
+    #         {
+    #           name  = "SERVICE_NAME"
+    #           value = "python-ai"
+    #         },
+    #         {
+    #           name  = "WORKERS"
+    #           value = "1"
+    #         },
+    #         {
+    #           name  = "LOG_LEVEL"
+    #           value = "INFO"
+    #         }
+    #         ]
+    #       resources = {
+    #         limits = {
+    #           memory = "512Mi"
+    #           cpu    = "1"
+    #         }
+    #       }
+    #       volume_mounts = [
+    #         {
+    #           name       = "ml-models"
+    #           mount_path = "/models"
+    #         }
+    #       ]
+    #     }
+    #   ]
       
-      containers = [
-        {
-          name  = "python-container"
-          image = "${dependency.artifact_registry_repository.outputs.repository_urls.python_server}/ai-interview-python-server"
-          tag   = local.image_tag
-          env_vars = [
-            {
-              name  = "GOOGLE_CLOUD_PROJECT"
-              value = local.gcp_project_id
-            },
-            {
-              name  = "ENVIRONMENT"
-              value = "production"
-            },
-            {
-              name  = "SERVICE_NAME"
-              value = "python-ai"
-            },
-            {
-              name  = "WORKERS"
-              value = "1"
-            },
-            {
-              name  = "LOG_LEVEL"
-              value = "INFO"
-            }
-          ]
-          resources = {
-            limits = {
-              memory = "192Mi"
-              cpu    = "0.3"
-            }
-          }
-          volume_mounts = [
-            {
-              name       = "ml-models"
-              mount_path = "/models"
-            }
-          ]
-        }
-      ]
+    #   volumes = [
+    #     {
+    #       name = "ml-models"
+    #       secret = {
+    #         secret_name = "python-ai-model-configs"
+    #         items = [
+    #           {
+    #             path    = "config.json"
+    #             version = "latest"
+    #           }
+    #         ]
+    #       }
+    #     }
+    #   ]
+        
+    #   min_instance_count = 0
+    #   max_instance_count = 1
+    #   timeout_seconds    = 600
       
-      volumes = [
-        {
-          name = "ml-models"
-          secret = {
-            secret_name = "python-ai-model-configs"
-            items = [
-              {
-                path    = "config.json"
-                version = "latest"
-              }
-            ]
-          }
-        }
-      ]
+    #   labels = {
+    #     "app"   = "ai-interview"
+    #     "layer" = "ai"
+    #     "tech"  = "python"
+    #   }
       
-      min_instance_count = 0
-      max_instance_count = 1
-      timeout_seconds    = 600
-      
-      labels = {
-        "app"   = "ai-interview"
-        "layer" = "ai"
-        "tech"  = "python"
-      }
-      
-      iam_bindings = [
-        {
-          role    = "roles/run.invoker"
-          members = [
-            "serviceAccount:${local.platform_service_account_email}",
-            "serviceAccount:${local.api_gateway_service_account_email}"
-          ]
-        }
-      ]
-    }
+    #   iam_bindings = [
+    #     {
+    #       role    = "roles/run.invoker"
+    #       members = [
+    #         "serviceAccount:${local.platform_service_account_email}",
+    #         "serviceAccount:${local.api_gateway_service_account_email}"
+    #       ]
+    #     }
+    #   ]
+    # }
   ]
 }
