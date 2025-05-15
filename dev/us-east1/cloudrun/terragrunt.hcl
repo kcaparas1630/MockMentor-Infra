@@ -16,8 +16,8 @@ dependency "artifact_registry_repository" {
   config_path = "../artifact-repo"
 }
 
-dependencies {
-  paths = ["../service-accounts"]
+dependency "service_accounts" {
+  config_path = "../service-accounts"
 }
 
 locals {
@@ -69,20 +69,13 @@ inputs = {
           name  = "frontend-container"
           image = "${dependency.artifact_registry_repository.outputs.repository_urls.frontend}/ai-interview-frontend"
           tag   = local.image_tag
-          env_vars = [
-            {
-              name  = "GOOGLE_CLOUD_PROJECT"
-              value = local.gcp_project_id
-            },
-            {
-              name  = "NODE_ENV"
-              value = "production"
-            },
-            {
-              name  = "API_URL"
-              value = "https://ai-interview-typescript-server-xxxxx-uc.a.run.app"
-            }
-          ]
+          env_vars = concat(
+            [
+              { name = "GOOGLE_CLOUD_PROJECT", value = local.gcp_project_id },
+              { name = "NODE_ENV", value= "production },
+            ],
+            [for kv in local.frontend_secrets.env_vars : { name = kv.key, value = kv.value }]
+          )
           resources = {
             limits = {
               memory = "512Mi"
@@ -124,58 +117,21 @@ inputs = {
           name  = "typescript-container"
           image = "${dependency.artifact_registry_repository.outputs.repository_urls.typescript_server}/ai-interview-typescript-server"
           tag   = local.image_tag
-          env_vars = [
-            {
-              name  = "GOOGLE_CLOUD_PROJECT"
-              value = local.gcp_project_id
-            },
-            {
-              name  = "NODE_ENV"
-              value = "production"
-            },
-            {
-              name  = "SERVICE_NAME"
-              value = "typescript-backend"
-            },
-            #{
-            # name  = "AI_SERVICE_URL"
-            # value = "https://ai-interview-python-server-xxxxx-uc.a.run.app"
-            #},
-            # Add database credentials from secrets
-            {
-              name  = "DATABASE_URL"
-              value = try(local.typescript_secrets.env_vars.DATABASE_URL, "")
-            }
-          ]
+          env_vars = concat(
+            [
+              { name = "GOOGLE_CLOUD_PROJECT", value = local.gcp_project_id },
+              { name = "NODE_ENV",          value = "production" },
+            ],
+            [for kv in local.typescript_secrets.env_vars : { name = kv.key, value = kv.value }]
+          )
           resources = {
             limits = {
               memory = "512Mi"
               cpu    = "1"
             }
           }
-         # volume_mounts = [
-         #   {
-         #     name       = "api-creds"
-         #     mount_path = "/secrets/api"
-         #   }
-         # ]
         }
       ]
-      
-      #volumes = [
-      #  {
-      #    name = "api-creds"
-      #    secret = {
-      #      secret_name = "typescript-api-credentials"
-      #      items = [
-      #        {
-      #          path    = "credentials.json"
-      #          version = "latest"
-      #        }
-      #      ]
-      #    }
-      #  }
-      #]
       
       min_instance_count = 0
       max_instance_count = 2
