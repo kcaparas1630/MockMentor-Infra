@@ -1,10 +1,11 @@
 # include the root configuration (terragrunt.hcl) which has the common configuration across the environment.
 
 include "root" {
-    path = find_in_parent_folders()
+    path = find_in_parent_folders("terragrunt.hcl")
 }
+
 include "modules" {
-    path = "${dirname(find_in_parent_folders("modules.hcl"))}"
+    path = find_in_parent_folders("modules.hcl")
     expose = true
 }
 
@@ -12,6 +13,7 @@ include "modules" {
 terraform {
     source = "${include.modules.locals.base_source_url}?ref=${include.modules.locals.base_source_version}"
 }
+
 inputs = {
   gcp_api_url = "artifactregistry.googleapis.com"
 }
