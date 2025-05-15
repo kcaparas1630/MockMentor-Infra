@@ -72,15 +72,37 @@ inputs = {
           env_vars = concat(
             [
               { name = "GOOGLE_CLOUD_PROJECT", value = local.gcp_project_id },
-              { name = "NODE_ENV", value= "production },
+              { name = "NODE_ENV", value= "production" }
             ],
-            [for kv in local.frontend_secrets.env_vars : { name = kv.key, value = kv.value }]
+            [for key, value in local.frontend_secrets.env_vars : { name = key, value = value }]
           )
           resources = {
             limits = {
               memory = "512Mi"
               cpu    = "1"
             }
+          }
+          startup_probe = {
+            http_get = {
+              path = "/health"
+              port = 80
+            }
+            initial_delay_seconds = 0
+            period_seconds        = 5
+            timeout_seconds       = 2
+            failure_threshold     = 30
+            success_threshold     = 1
+          }
+          liveness_probe = {
+            http_get = {
+              path = "/health"
+              port = 80
+            }
+            initial_delay_seconds = 10
+            period_seconds        = 10
+            timeout_seconds       = 2
+            failure_threshold     = 3
+            success_threshold     = 1
           }
         }
       ]
@@ -122,13 +144,35 @@ inputs = {
               { name = "GOOGLE_CLOUD_PROJECT", value = local.gcp_project_id },
               { name = "NODE_ENV",          value = "production" },
             ],
-            [for kv in local.typescript_secrets.env_vars : { name = kv.key, value = kv.value }]
+            [for key, value in local.typescript_secrets.env_vars : { name = key, value = value }]
           )
           resources = {
             limits = {
               memory = "512Mi"
               cpu    = "1"
             }
+          }
+          startup_probe = {
+            http_get = {
+              path = "/health"
+              port = 3000
+            }
+            initial_delay_seconds = 0
+            period_seconds        = 5
+            timeout_seconds       = 2
+            failure_threshold     = 30
+            success_threshold     = 1
+          }
+          liveness_probe = {
+            http_get = {
+              path = "/health"
+              port = 3000
+            }
+            initial_delay_seconds = 10
+            period_seconds        = 10
+            timeout_seconds       = 2
+            failure_threshold     = 3
+            success_threshold     = 1
           }
         }
       ]
@@ -152,90 +196,6 @@ inputs = {
           ]
         }
       ]
-    },
-    
-    # Python AI Service
-    # {
-    #   service_name       = "ai-interview-python-server"
-    #   container_port     = 8000
-    #   service_account    = local.platform_service_account_email
-       
-    #   containers = [
-    #     {
-    #       name  = "python-container"
-    #       image = "${dependency.artifact_registry_repository.outputs.repository_urls.python_server}/ai-interview-python-server"
-    #       tag   = local.image_tag
-    #       env_vars = [
-    #         {
-    #           name  = "GOOGLE_CLOUD_PROJECT"
-    #           value = local.gcp_project_id
-    #         },
-    #         {
-    #           name  = "ENVIRONMENT"
-    #           value = "production"
-    #         },
-    #         {
-    #           name  = "SERVICE_NAME"
-    #           value = "python-ai"
-    #         },
-    #         {
-    #           name  = "WORKERS"
-    #           value = "1"
-    #         },
-    #         {
-    #           name  = "LOG_LEVEL"
-    #           value = "INFO"
-    #         }
-    #         ]
-    #       resources = {
-    #         limits = {
-    #           memory = "512Mi"
-    #           cpu    = "1"
-    #         }
-    #       }
-    #       volume_mounts = [
-    #         {
-    #           name       = "ml-models"
-    #           mount_path = "/models"
-    #         }
-    #       ]
-    #     }
-    #   ]
-      
-    #   volumes = [
-    #     {
-    #       name = "ml-models"
-    #       secret = {
-    #         secret_name = "python-ai-model-configs"
-    #         items = [
-    #           {
-    #             path    = "config.json"
-    #             version = "latest"
-    #           }
-    #         ]
-    #       }
-    #     }
-    #   ]
-        
-    #   min_instance_count = 0
-    #   max_instance_count = 1
-    #   timeout_seconds    = 600
-      
-    #   labels = {
-    #     "app"   = "ai-interview"
-    #     "layer" = "ai"
-    #     "tech"  = "python"
-    #   }
-      
-    #   iam_bindings = [
-    #     {
-    #       role    = "roles/run.invoker"
-    #       members = [
-    #         "serviceAccount:${local.platform_service_account_email}",
-    #         "serviceAccount:${local.api_gateway_service_account_email}"
-    #       ]
-    #     }
-    #   ]
-    # }
+    }
   ]
 }
