@@ -13,7 +13,7 @@ include "modules" {
 }
 
 terraform {
-  source = "${include.modules.locals.modules[\"service-accounts\"].source_url}?ref=${include.modules.locals.modules[\"service-accounts\"].version}"
+  source = "${include.modules.locals.modules.service-accounts.source_url}?ref=${include.modules.locals.modules.service-accounts.version}"
 }
 
 inputs = {
