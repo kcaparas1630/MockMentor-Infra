@@ -1,4 +1,4 @@
-# AI-Interviewer-Infrastructure
+# MockMentor-Infrastructure
 
 Infrastructure-as-Code (IaC) for deploying and managing the AI Interviewer platform on Google Cloud, using Terragrunt and Terraform for modular, scalable, and secure cloud resource provisioning.
 
