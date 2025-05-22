@@ -139,13 +139,21 @@ inputs = {
           name  = "typescript-container"
           image = "${dependency.artifact_registry_repository.outputs.repository_urls.typescript_server}/ai-interview-typescript-server"
           tag   = local.image_tag
-          env_vars = concat(
-            [
-              { name = "GOOGLE_CLOUD_PROJECT", value = local.gcp_project_id },
-              { name = "NODE_ENV",          value = "production" },
-            ],
-            [for key, value in local.typescript_secrets.env_vars : { name = key, value = value }]
-          )
+          env_vars = [
+            { name = "GOOGLE_CLOUD_PROJECT", value = local.gcp_project_id },
+            { name = "NODE_ENV", value = "production" },
+            { name = "TYPE", value = local.typescript_secrets.type },
+            { name = "FIREBASE_PROJECT_ID", value = local.typescript_secrets.project_id },
+            { name = "FIREBASE_PRIVATE_KEY_ID", value = local.typescript_secrets.private_key_id },
+            { name = "FIREBASE_PRIVATE_KEY", value = local.typescript_secrets.private_key },
+            { name = "FIREBASE_CLIENT_EMAIL", value = local.typescript_secrets.client_email },
+            { name = "FIREBASE_CLIENT_ID", value = local.typescript_secrets.client_id },
+            { name = "FIREBASE_AUTH_URI", value = local.typescript_secrets.auth_uri },
+            { name = "FIREBASE_TOKEN_URI", value = local.typescript_secrets.token_uri },
+            { name = "FIREBASE_AUTH_PROVIDER_X509_CERT_URL", value = local.typescript_secrets.auth_provider_x509_cert_url },
+            { name = "FIREBASE_CLIENT_X509_CERT_URL", value = local.typescript_secrets.client_x509_cert_url },
+            { name = "FIREBASE_UNIVERSE_DOMAIN", value = local.typescript_secrets.universe_domain }
+          ],
           resources = {
             limits = {
               memory = "512Mi"
@@ -179,7 +187,7 @@ inputs = {
       
       min_instance_count = 0
       max_instance_count = 2
-      timeout_seconds    = 300
+      timeout_seconds    = 600
       
       labels = {
         "app"   = "ai-interview"
