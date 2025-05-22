@@ -35,7 +35,7 @@ locals {
   secrets_dir = "${get_terragrunt_dir()}/secrets"
   frontend_secrets = fileexists("${local.secrets_dir}/frontend.enc.yaml") ? yamldecode(sops_decrypt_file("${local.secrets_dir}/frontend.enc.yaml")) : {}
   typescript_secrets = fileexists("${local.secrets_dir}/typescript.enc.yaml") ? yamldecode(sops_decrypt_file("${local.secrets_dir}/typescript.enc.yaml")) : {}
-  # python_secrets = fileexists("${local.secrets_dir}/python.enc.yaml") ? yamldecode(sops_decrypt_file("${local.secrets_dir}/python.enc.yaml")) : {}
+  python_secrets = fileexists("${local.secrets_dir}/python.enc.yaml") ? yamldecode(sops_decrypt_file("${local.secrets_dir}/python.enc.yaml")) : {}
   
   # Get the image tag from an environment variable, defaulting to "latest"
   image_tag = get_env("DEPLOY_IMAGE_TAG", "latest")
@@ -193,6 +193,53 @@ inputs = {
           members = [
             "serviceAccount:${local.platform_service_account_email}",
             "serviceAccount:${local.api_gateway_service_account_email}"
+          ]
+        }
+      ]
+    },
+    # Python AI Service
+    {
+      service_name       = "ai-interview-python-server"
+      container_port     = 8000
+      service_account    = local.platform_service_account_email
+       
+      containers = [
+        {
+          name  = "python-container"
+          image = "${dependency.artifact_registry_repository.outputs.repository_urls.python_server}/ai-interview-python-server"
+          tag   = local.image_tag
+          env_vars = concat(
+            [
+              { name = "GOOGLE_CLOUD_PROJECT", value = local.gcp_project_id },
+              { name = "NODE_ENV",          value = "production" },
+            ],
+            [for key, value in local.python_secrets.env_vars : { name = key, value = value }]
+          )
+          resources = {
+            limits = {
+              memory = "512Mi"
+              cpu    = "1"
+            }
+          }
+        
+          min_instance_count = 0
+          max_instance_count = 1
+          timeout_seconds    = 600
+          
+          labels = {
+            "app"   = "ai-interview"
+            "layer" = "ai"
+            "tech"  = "python"
+          }
+          
+          iam_bindings = [
+            {
+              role    = "roles/run.invoker"
+              members = [
+                "serviceAccount:${local.platform_service_account_email}",
+                "serviceAccount:${local.api_gateway_service_account_email}"
+              ]
+            }
           ]
         }
       ]
