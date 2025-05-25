@@ -14,21 +14,21 @@ terraform {
 inputs = {
     artifact_repos = [
         {
-            repository_id   = "ai-interview-frontend"
+            repository_id   = "mockmentor-frontend-dev"
             location        = include.envcommon.locals.gcp_region
             description     = "Repository for frontend"
             format          = "DOCKER"
             project_id      = include.envcommon.locals.gcp_project_id
         },
         {
-            repository_id   = "ai-interview-typescript-server"
+            repository_id   = "mockmentor-express-server-dev"
             location        = include.envcommon.locals.gcp_region
-            description     = "TypeScript Server Repository"
+            description     = "Express Server Repository"
             format          = "DOCKER"
             project_id      = include.envcommon.locals.gcp_project_id
         },
         {
-            repository_id   = "ai-interview-python-server"
+            repository_id   = "mockmentor-python-server-dev"
             location        = include.envcommon.locals.gcp_region
             description     = "Python Server Repository"
             format          = "DOCKER"

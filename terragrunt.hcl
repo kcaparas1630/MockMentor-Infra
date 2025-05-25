@@ -6,9 +6,9 @@ remote_state {
         if_exists   = "overwrite"
     }
     config = {
-        project     = "terraform-practice-455719"
+        project     = "mockmentor-460805"
         location    = "us-east1"
-        bucket      = "tf-state-ai-interviewer"
+        bucket      = "tf-state-mockmentor"
         prefix      = "${path_relative_to_include()}/terraform.tfstate"
     }
 }
