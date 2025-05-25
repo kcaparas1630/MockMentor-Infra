@@ -4,16 +4,18 @@ include "root" {
     path = find_in_parent_folders("terragrunt.hcl")
 }
 
-include "modules" {
-    path = find_in_parent_folders("modules.hcl")
-    expose = true
+# Include the envcommon configuration for the component.
+include "envcommon" {
+  path = "${dirname(find_in_parent_folders())}/_envcommons/artifact-registry.hcl"
+  expose = true
 }
 
 # Configure the version of the module to use in this environment
 terraform {
-    source = "${include.modules.locals.base_source_url}?ref=${include.modules.locals.base_source_version}"
+    source = "${include.envcommon.locals.base_source_url}?ref=${include.envcommon.locals.base_source_version}"
 }
 
+# Only enable the Artifact Registry API
 inputs = {
-  gcp_api_url = "artifactregistry.googleapis.com"
+  enable_apis = ["artifactregistry.googleapis.com"]
 }

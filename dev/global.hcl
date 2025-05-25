@@ -10,7 +10,7 @@ locals {
   
   # Artifact Registry configuration
   artifact_registry_region = "us-east1"
-  artifact_registry_gcp_project = "terraform-practice-455719"
+  artifact_registry_gcp_project = "mockmentor-460805"
   
   # Reference modules configuration from modules.hcl instead of hardcoding
   modules_vars = read_terragrunt_config(find_in_parent_folders("modules.hcl"))

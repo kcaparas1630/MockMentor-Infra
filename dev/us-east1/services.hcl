@@ -9,7 +9,11 @@ locals {
     roles = [
       "roles/run.invoker",
       "roles/logging.logWriter",
-      "roles/monitoring.metricWriter"
+      "roles/monitoring.metricWriter",
+      "roles/artifactregistry.writer",
+      "roles/cloudkms.cryptoKeyEncrypterDecrypter",
+      "roles/run.admin",
+      "roles/iam.serviceAccountUser",
     ]
   }
   

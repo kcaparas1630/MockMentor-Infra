@@ -12,12 +12,17 @@ include "modules" {
   expose = true
 }
 
+include "project_id" {
+  path = find_in_parent_folders("project.hcl")
+  expose = true
+}
+
 terraform {
   source = "${include.modules.locals.modules.service-accounts.source_url}?ref=${include.modules.locals.modules.service-accounts.version}"
 }
 
 inputs = {
-  project_id = "terraform-practice-455719"
+  project_id = include.project_id.locals.gcp_project_id
   
   # Format to match the expected variable structure
   service_accounts = {
