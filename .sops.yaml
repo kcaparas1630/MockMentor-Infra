@@ -1,4 +1,4 @@
 creation_rules:
   - path_regex: .*\.enc\.yaml$
-    encrypted_regex: ^(data|stringData|password|token|key|secret|env_vars)$
-    gcp_kms: projects/terraform-practice-455719/locations/global/keyRings/sops-keyring/cryptoKeys/sops-key
+    encrypted_regex: .*
+    gcp_kms: projects/mockmentor-460805/locations/global/keyRings/sops-keyring/cryptoKeys/sops-key
