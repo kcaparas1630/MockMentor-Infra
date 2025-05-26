@@ -60,14 +60,14 @@ inputs = {
   cloud_run_services = [
     # Frontend Service
     {
-      service_name       = "ai-interview-frontend"
+      service_name       = "mockmentor-frontend-dev"
       container_port     = 80
       service_account    = local.platform_service_account_email
       
       containers = [
         {
           name  = "frontend-container"
-          image = "${dependency.artifact_registry_repository.outputs.repository_urls.frontend}/ai-interview-frontend"
+          image = "${dependency.artifact_registry_repository.outputs.repository_urls.frontend}/mockmentor-frontend-dev"
           tag   = local.image_tag
           env_vars = concat(
             [
@@ -111,7 +111,7 @@ inputs = {
       max_instance_count = 2
       
       labels = {
-        "app"   = "ai-interview"
+        "app"   = "mockmentor"
         "layer" = "frontend"
       }
       
@@ -130,29 +130,29 @@ inputs = {
     
     # TypeScript Backend Service
     {
-      service_name       = "ai-interview-typescript-server"
+      service_name       = "mockmentor-express-server-dev"
       container_port     = 3000
       service_account    = local.platform_service_account_email
       
       containers = [
         {
           name  = "typescript-container"
-          image = "${dependency.artifact_registry_repository.outputs.repository_urls.typescript_server}/ai-interview-typescript-server"
+          image = "${dependency.artifact_registry_repository.outputs.repository_urls.typescript_server}/mockmentor-express-server-dev"
           tag   = local.image_tag
           env_vars = [
             { name = "GOOGLE_CLOUD_PROJECT", value = local.gcp_project_id },
             { name = "NODE_ENV", value = "production" },
-            { name = "TYPE", value = local.typescript_secrets.type },
-            { name = "FIREBASE_PROJECT_ID", value = local.typescript_secrets.project_id },
-            { name = "FIREBASE_PRIVATE_KEY_ID", value = local.typescript_secrets.private_key_id },
-            { name = "FIREBASE_PRIVATE_KEY", value = local.typescript_secrets.private_key },
-            { name = "FIREBASE_CLIENT_EMAIL", value = local.typescript_secrets.client_email },
-            { name = "FIREBASE_CLIENT_ID", value = local.typescript_secrets.client_id },
-            { name = "FIREBASE_AUTH_URI", value = local.typescript_secrets.auth_uri },
-            { name = "FIREBASE_TOKEN_URI", value = local.typescript_secrets.token_uri },
-            { name = "FIREBASE_AUTH_PROVIDER_X509_CERT_URL", value = local.typescript_secrets.auth_provider_x509_cert_url },
-            { name = "FIREBASE_CLIENT_X509_CERT_URL", value = local.typescript_secrets.client_x509_cert_url },
-            { name = "FIREBASE_UNIVERSE_DOMAIN", value = local.typescript_secrets.universe_domain }
+            { name = "FIREBASE_TYPE", value = local.typescript_secrets.FIREBASE_TYPE },
+            { name = "FIREBASE_PROJECT_ID", value = local.typescript_secrets.FIREBASE_PROJECT_ID },
+            { name = "FIREBASE_PRIVATE_KEY_ID", value = local.typescript_secrets.FIREBASE_PRIVATE_KEY_ID },
+            { name = "FIREBASE_PRIVATE_KEY", value = local.typescript_secrets.FIREBASE_PRIVATE_KEY },
+            { name = "FIREBASE_CLIENT_EMAIL", value = local.typescript_secrets.FIREBASE_CLIENT_EMAIL },
+            { name = "FIREBASE_CLIENT_ID", value = local.typescript_secrets.FIREBASE_CLIENT_ID },
+            { name = "FIREBASE_AUTH_URI", value = local.typescript_secrets.FIREBASE_AUTH_URI },
+            { name = "FIREBASE_TOKEN_URI", value = local.typescript_secrets.FIREBASE_TOKEN_URI },
+            { name = "FIREBASE_AUTH_PROVIDER_X509_CERT_URL", value = local.typescript_secrets.FIREBASE_AUTH_PROVIDER_X509_CERT_URL },
+            { name = "FIREBASE_CLIENT_X509_CERT_URL", value = local.typescript_secrets.FIREBASE_CLIENT_X509_CERT_URL },
+            { name = "FIREBASE_UNIVERSE_DOMAIN", value = local.typescript_secrets.FIREBASE_UNIVERSE_DOMAIN }
           ],
           resources = {
             limits = {
@@ -190,7 +190,7 @@ inputs = {
       timeout_seconds    = 600
       
       labels = {
-        "app"   = "ai-interview"
+        "app"   = "mockmentor"
         "layer" = "backend"
         "tech"  = "typescript"
       }
@@ -207,14 +207,14 @@ inputs = {
     },
     # Python AI Service
     {
-      service_name       = "ai-interview-python-server"
+      service_name       = "mockmentor-ai-service-dev"
       container_port     = 8000
       service_account    = local.platform_service_account_email
        
       containers = [
         {
           name  = "python-container"
-          image = "${dependency.artifact_registry_repository.outputs.repository_urls.python_server}/ai-interview-python-server"
+          image = "${dependency.artifact_registry_repository.outputs.repository_urls.python_server}/mockmentor-python-server-dev"
           tag   = local.image_tag
           env_vars = concat(
             [
@@ -235,7 +235,7 @@ inputs = {
           timeout_seconds    = 600
           
           labels = {
-            "app"   = "ai-interview"
+            "app"   = "mockmentor"
             "layer" = "ai"
             "tech"  = "python"
           }
