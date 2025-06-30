@@ -152,7 +152,8 @@ inputs = {
             { name = "FIREBASE_TOKEN_URI", value = local.typescript_secrets.FIREBASE_TOKEN_URI },
             { name = "FIREBASE_AUTH_PROVIDER_X509_CERT_URL", value = local.typescript_secrets.FIREBASE_AUTH_PROVIDER_X509_CERT_URL },
             { name = "FIREBASE_CLIENT_X509_CERT_URL", value = local.typescript_secrets.FIREBASE_CLIENT_X509_CERT_URL },
-            { name = "FIREBASE_UNIVERSE_DOMAIN", value = local.typescript_secrets.FIREBASE_UNIVERSE_DOMAIN }
+            { name = "FIREBASE_UNIVERSE_DOMAIN", value = local.typescript_secrets.FIREBASE_UNIVERSE_DOMAIN },
+            { name = "DATABASE_URL", value = local.typescript_secrets.DATABASE_URL }
           ],
           resources = {
             limits = {
