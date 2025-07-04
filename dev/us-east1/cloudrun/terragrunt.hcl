@@ -226,7 +226,7 @@ inputs = {
           )
           resources = {
             limits = {
-              memory = "512Mi"
+              memory = "2Gi"
               cpu    = "1"
             }
           }
