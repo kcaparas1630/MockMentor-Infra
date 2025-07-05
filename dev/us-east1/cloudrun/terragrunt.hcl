@@ -78,7 +78,7 @@ inputs = {
           )
           resources = {
             limits = {
-              memory = "512Mi"
+              memory = "1Gi"
               cpu    = "1"
             }
           }
@@ -183,6 +183,14 @@ inputs = {
             failure_threshold     = 3
             success_threshold     = 1
           }
+          iam_bindings = [
+            {
+              role    = "roles/run.invoker"
+              members = ["allUsers"]  # Public access for frontend
+            }
+          ]
+          # allow unauthenticated users to access the service
+          allow_unauthenticated = true
         }
       ]
       
@@ -233,7 +241,7 @@ inputs = {
         
           min_instance_count = 0
           max_instance_count = 1
-          timeout_seconds    = 600
+          timeout_seconds    = 3600
           
           labels = {
             "app"   = "mockmentor"
@@ -250,6 +258,8 @@ inputs = {
               ]
             }
           ]
+          # allow unauthenticated users to access the service
+          allow_unauthenticated = true
         }
       ]
     }
