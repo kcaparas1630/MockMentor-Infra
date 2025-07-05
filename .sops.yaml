@@ -2,3 +2,4 @@ creation_rules:
   - path_regex: .*\.enc\.yaml$
     encrypted_regex: .*
     gcp_kms: projects/mockmentor-460805/locations/global/keyRings/sops-keyring/cryptoKeys/sops-key
+    gcp_kms_project: mockmentor-460805
