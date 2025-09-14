@@ -233,10 +233,12 @@ inputs = {
             [for key, value in local.python_secrets.env_vars : { name = key, value = value }]
           )
           resources = {
+            cpu_idle = true
             limits = {
-              memory = "2Gi"
-              cpu    = "1"
+              memory = "8Gi"
+              cpu    = "2000m"
             }
+            startup_cpu_boost = true
           }
         
           min_instance_count = 0
